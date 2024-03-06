@@ -31,22 +31,24 @@ class DoublePendulum:
         self.velocity0 = 0
         self.velocity1 = 0
         # Gravitational acceleration. Just set to one for now.
-        self.g = 1
+        self.g = 10
     def get_first_point(self) -> tuple: # This returns the position of the center of the first mass.
         # This gets the first point.
-        return (math.sin(self.a0) * self.l0, math.cos(self.a0) * self.l1)
+        return (math.sin(self.a0) * self.l0, math.cos(self.a0) * self.l0)
     def get_second_point(self) -> tuple:
         # This gets the second point.
         # First get the first point and then use trigonometry to find the second point.
         first_point = self.get_first_point()
-        return (math.sin(self.a1) * self.l0 + first_point[0], math.cos(self.a1) * self.l1 + first_point[1])
+        return (math.sin(self.a1) * self.l1 + first_point[0], math.cos(self.a1) * self.l1 + first_point[1])
     def render(self) -> None: # This renders the stuff. (For visualization.)
         # First get the coordinates of the spheres and draw the lines.
         p0 = self.get_first_point()
         p1 = self.get_second_point()
         # Now get the distance between p0 and p1...
-
-        
+        distance = math.sqrt((p0[0]**2) + (p0[1]**2))
+        print("Here is the distance: "+str(distance))
+        distance = math.sqrt(((p0[0] - p1[0])**2) + ((p0[1] - p1[1])**2))
+        print("Here is another distance: "+str(distance))
         # This is to handle the direction in which we render the shit.
         p0 = (p0[0], p0[1]*(-1))
         p1 = (p1[0], p1[1]*(-1))
@@ -87,12 +89,30 @@ class DoublePendulum:
 
         self.acceleration1 = (acceleration1_dividend_1 * (acceleration1_dividend_2 + acceleration1_dividend_3 + acceleration1_dividend_4)) / (acceleration1_divisor)
 
+        
+
+        # Now calculate the other angular acceleration. (This is the angular acceleration of the first shit.)
+
+        acceleration0_dividend_1 = (-1*self.g*(2*self.w0 + self.w1)*math.sin(self.a0))
+        acceleration0_dividend_2 = (self.w1 * self.g * math.sin(self.a0 - 2 * self.a1))
+        acceleration0_dividend_3 = (2 * math.sin(self.a0 - self.a1) * self.w1 * ((self.velocity1**2)*self.l1 + (self.velocity0**2) * self.l0 * math.cos(self.a0 - self.a1)))
+
+        acceleration0_divisor = (self.l0*(2*self.w0 + self.w1 - self.w1*math.cos(2*self.a0 - 2*self.a1)))
+
+        self.acceleration0 = (acceleration0_dividend_1 - acceleration0_dividend_2 - acceleration0_dividend_3) / (acceleration0_divisor)
+
+
+
         # Update variables.
         self.velocity1 += self.acceleration1 * d_t # Update velocity.
         # Update angle with angular velocity.
         self.a1 += self.velocity1 * d_t
 
-        # Now calculate the other angular acceleration.
+        # Update variables.
+        self.velocity0 += self.acceleration0 * d_t # Update velocity.
+        # Update angle with angular velocity.
+        self.a0 += self.velocity0 * d_t
+
 
         return # Just a stub for now.
 
@@ -100,15 +120,15 @@ def main() -> int:
     turtle.tracer(0,0)
     turtle.speed(0)
     l0 = 2
-    l1 = 1
+    l1 = 2
     w0 = 1
-    w1 = 1
+    w1 = 10
     v0 = 1
     v1 = 1
     #a0 = math.pi/4
     #a1 = math.pi/4
     a0 = 0
-    a1 = math.pi/4
+    a1 = math.pi/2
     simulation = DoublePendulum(l0, l1, w0, w1, v0, v1, a0, a1)
     while True:
         #simulation.a0 += 0.03 # Try out the rendering etc..
